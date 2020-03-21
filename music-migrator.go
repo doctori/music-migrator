@@ -27,11 +27,13 @@ func mainCompleter(d prompt.Document) []prompt.Suggest {
 			s = []prompt.Suggest{
 				{Text: "login", Description: "login to spotify"},
 				{Text: "playlist", Description: "list playlists"},
+				{Text: "loved-tracks", Description: "list all the loved tracks"},
 			}
 		case "deezer":
 			s = []prompt.Suggest{
 				{Text: "login", Description: "login do deezer"},
 				{Text: "playlist", Description: "list playlists"},
+				{Text: "loved-tracks", Description: "List all the loved tracks"},
 			}
 		}
 
@@ -51,19 +53,27 @@ func mainSwitcher(input string) {
 		s.Connect()
 
 	case "spotify playlist":
-		if s.Connected {
-			s.ListPlaylists()
-		} else {
-			fmt.Println("you need to be connected")
+		if !s.Connected {
+			s.Connect()
 		}
+		s.ListPlaylists()
+	case "spotify loved-tracks":
+		if !s.Connected {
+			s.Connect()
+		}
+		s.PrintSpotifyLovedTracks()
 	case "deezer login":
-
 		d.Connect()
 	case "deezer playlist":
 		if !d.Connected {
 			d.Connect()
 		}
 		printDeezerPlaylists()
+	case "deezer loved-tracks":
+		if !d.Connected {
+			d.Connect()
+		}
+		printDeezerLovedTracks()
 	default:
 		fmt.Printf("What do you want me to do with %s\n", input)
 	}

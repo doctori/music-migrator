@@ -1,5 +1,7 @@
 package deezer
 
+import "encoding/json"
+
 type Track struct {
 	ID                 int      `json:"id,omitempty"`                  // The track's Deezer id
 	Readable           bool     `json:"readable,omitempty"`            // true if the track is readable in the player for the current user
@@ -29,3 +31,14 @@ type ExtendedTrackList struct {
 	Next  string  `json:"next"`
 }
 type TrackList []Track
+
+func (t *TrackList) UnmarshalJSON(data []byte) error {
+	extendedTrackList := ExtendedTrackList{}
+	if err := json.Unmarshal(data, &extendedTrackList); err != nil {
+		return err
+	}
+
+	*t = extendedTrackList.Data
+
+	return nil
+}

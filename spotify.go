@@ -28,7 +28,13 @@ type Spotify struct {
 
 // Init Initialize the spotify client
 func (s *Spotify) Init() (err error) {
-	s.auth = spotify.NewAuthenticator(spotifyRedirectURI, spotify.ScopeUserReadPrivate, spotify.ScopePlaylistReadPrivate, spotify.ScopePlaylistReadCollaborative)
+	s.auth = spotify.NewAuthenticator(
+		spotifyRedirectURI,
+		spotify.ScopeUserReadPrivate,
+		spotify.ScopePlaylistReadPrivate,
+		spotify.ScopePlaylistReadCollaborative,
+		spotify.ScopeUserLibraryRead,
+	)
 	s.Connected = false
 	s.ch = make(chan *spotify.Client)
 	s.state, err = utils.GenerateRandomString(32)
@@ -67,7 +73,7 @@ func (s *Spotify) ListPlaylists() {
 	playlistCounter := 0
 
 	offset := 0
-	limit := 10
+	limit := 50
 	opt := spotify.Options{
 		Offset: &offset,
 		Limit:  &limit,
@@ -90,6 +96,33 @@ func (s *Spotify) ListPlaylists() {
 	}
 
 }
+func (s *Spotify) PrintSpotifyLovedTracks() {
+	trackCounter := 0
+
+	offset := 0
+	limit := 50
+	opt := spotify.Options{
+		Offset: &offset,
+		Limit:  &limit,
+	}
+	s.client.CurrentUsersTracks()
+	for {
+		tracks, err := s.client.CurrentUsersTracksOpt(&opt)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		for _, track := range tracks.Tracks {
+			trackCounter++
+			fmt.Printf("%s - %s - %s\n", track.Name, track.Artists[0].Name, track.Album.Name)
+		}
+		if trackCounter == tracks.Total {
+			break
+		}
+		offset += limit
+	}
+}
+
 func (s Spotify) completeAuth(w http.ResponseWriter, r *http.Request) {
 	tok, err := s.auth.Token(s.state, r)
 	if err != nil {

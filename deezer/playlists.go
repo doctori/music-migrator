@@ -1,6 +1,9 @@
 package deezer
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type Playlist struct {
 	ID            int       `json:"id,omitempty"`             // The playlist's Deezer id
@@ -38,4 +41,17 @@ func (p *PlaylistList) UnmarshalJSON(data []byte) error {
 	*p = ePlaylistList.Data
 
 	return nil
+}
+
+func (c *Client) GetPlaylist(ID int) (playlist Playlist, err error) {
+	resp, err := c.http.R().
+		SetQueryParam("acces_token", c.token).
+		SetHeader("Accept", "application/json").
+		Get(fmt.Sprintf("%s/playlist/%d", c.baseURL, ID))
+	if err != nil {
+		return
+	}
+	err = c.http.JSONUnmarshal(resp.Body(), &playlist)
+	return
+
 }
